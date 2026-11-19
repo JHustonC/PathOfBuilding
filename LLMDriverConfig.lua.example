@@ -1,0 +1,43 @@
+-- LLMDriver Configuration
+-- Copy this file to your PoB user directory as LLMDriverConfig.lua and modify as needed
+
+return {
+    -- Enable/disable the module
+    enabled = true,
+
+    -- Primary LLM provider (nvidia, ollama, openai, anthropic, custom)
+    provider = "nvidia",
+
+    -- Model to use
+    model = "nemotron-3-ultra",
+
+    -- API key (set via environment variable or edit this file)
+    api_key = os.getenv("NVIDIA_API_KEY") or "",
+
+    -- API endpoint
+    endpoint = "https://integrate.api.nvidia.com/v1/chat/completions",
+
+    -- Request timeout (seconds)
+    timeout = 30,
+
+    -- Max retries on failure
+    max_retries = 3,
+
+    -- Default dry-run mode (preview actions without executing)
+    dry_run_default = false,
+
+    -- Live loadout name (protected from experiments)
+    live_loadout_name = "Default",
+
+    -- Fallback provider (used when primary fails)
+    fallback_provider = "ollama",
+
+    -- Fallback model
+    fallback_model = "llama3.1:70b",
+
+    -- Fallback endpoint (Ollama default)
+    fallback_endpoint = "http://localhost:11434/v1/chat/completions",
+
+    -- Log level: debug, info, warn, error
+    log_level = "info",
+}
