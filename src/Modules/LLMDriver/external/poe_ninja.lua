@@ -1,13 +1,12 @@
 -- Path of Building
 -- Module: LLMDriver External poe.ninja
--- Fetches and caches poe.ninja data
+-- Fetches and caches poe.ninja data using lcurl.safe
 
 local LoadModule = LoadModule
 local require = require
-local http = require("socket.http")
-local ltn12 = require("ltn12")
 local json = require("dkjson")
 local cache = LoadModule("Modules/LLMDriver/external/cache")
+local http_util = LoadModule("Modules/LLMDriver/external/http_util")
 
 local poe_ninja = {}
 
@@ -28,26 +27,11 @@ function poe_ninja.Fetch(category, league)
 
     url = url .. "?league=" .. league .. "&type=" .. category
 
-    local responseBody = {}
-    local request = {
-        url = url,
-        method = "GET",
-        sink = ltn12.sink.table(responseBody),
-    }
-
-    local ok, code = pcall(function()
-        return http.request(request)
-    end)
-
-    if not ok then
-        return nil, "Request failed: " .. tostring(code)
+    local body, err = http_util.Get(url, nil, 30)
+    if not body then
+        return nil, err
     end
 
-    if code ~= 200 then
-        return nil, "HTTP " .. code
-    end
-
-    local body = table.concat(responseBody)
     local data, err = json.decode(body)
     if not data then
         return nil, "JSON parse failed: " .. err

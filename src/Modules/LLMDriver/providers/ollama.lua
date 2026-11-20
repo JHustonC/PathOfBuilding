@@ -1,12 +1,11 @@
 -- Path of Building
 -- Module: LLMDriver Ollama Provider
--- Local Ollama HTTP adapter (OpenAI-compatible API)
+-- Local Ollama HTTP adapter (OpenAI-compatible API) using lcurl.safe
 
 local LoadModule = LoadModule
 local require = require
-local http = require("socket.http")
-local ltn12 = require("ltn12")
 local json = require("dkjson")
+local http_util = LoadModule("Modules/LLMDriver/external/http_util")
 
 local ollama = {}
 
@@ -81,36 +80,17 @@ function ollama.New(config)
         return false, err
     end
 
-    -- Make HTTP request
+    -- Make HTTP request using http_util
     function self:MakeRequest(jsonBody)
-        local responseBody = {}
         local headers = {
             ["Content-Type"] = "application/json",
-            ["Content-Length"] = string.len(jsonBody),
         }
 
-        local request = {
-            url = self.endpoint,
-            method = "POST",
-            headers = headers,
-            source = ltn12.source.string(jsonBody),
-            sink = ltn12.sink.table(responseBody),
-        }
-
-        local ok, code, respHeaders, status = pcall(function()
-            return http.request(request)
-        end)
-
-        if not ok then
-            return nil, "Request failed: " .. tostring(code)
+        local response, err = http_util.Post(self.endpoint, headers, jsonBody, self.timeout)
+        if not response then
+            return nil, err
         end
-
-        if code ~= 200 then
-            local body = table.concat(responseBody)
-            return nil, "HTTP " .. code .. ": " .. body
-        end
-
-        return table.concat(responseBody), nil
+        return response, nil
     end
 
     -- Build messages array (same as NVIDIA)

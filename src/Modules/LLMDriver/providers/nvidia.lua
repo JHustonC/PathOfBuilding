@@ -1,12 +1,11 @@
 -- Path of Building
 -- Module: LLMDriver NVIDIA Provider
--- NVIDIA Nemotron HTTP adapter
+-- NVIDIA Nemotron HTTP adapter using lcurl.safe
 
 local LoadModule = LoadModule
 local require = require
-local http = require("socket.http")
-local ltn12 = require("ltn12")
 local json = require("dkjson")
+local http_util = LoadModule("Modules/LLMDriver/external/http_util")
 
 local nvidia = {}
 
@@ -87,39 +86,18 @@ function nvidia.New(config)
         return false, err
     end
 
-    -- Make HTTP request
+    -- Make HTTP request using http_util
     function self:MakeRequest(jsonBody)
-        local responseBody = {}
         local headers = {
             ["Content-Type"] = "application/json",
             ["Authorization"] = "Bearer " .. self.api_key,
-            ["Content-Length"] = string.len(jsonBody),
         }
 
-        local request = {
-            url = self.endpoint,
-            method = "POST",
-            headers = headers,
-            source = ltn12.source.string(jsonBody),
-            sink = ltn12.sink.table(responseBody),
-        }
-
-        -- Note: socket.http doesn't support timeout directly in all versions
-        -- We rely on coroutine-based async in the actual implementation
-        local ok, code, respHeaders, status = pcall(function()
-            return http.request(request)
-        end)
-
-        if not ok then
-            return nil, "Request failed: " .. tostring(code)
+        local response, err = http_util.Post(self.endpoint, headers, jsonBody, self.timeout)
+        if not response then
+            return nil, err
         end
-
-        if code ~= 200 then
-            local body = table.concat(responseBody)
-            return nil, "HTTP " .. code .. ": " .. body
-        end
-
-        return table.concat(responseBody), nil
+        return response, nil
     end
 
     -- Build messages array
