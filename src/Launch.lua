@@ -78,16 +78,23 @@ function launch:OnInit()
 		-- Load LLMDriver module (1-line patch)
 		ConPrintf("LLMDriver: Launch patch executing")
 		local llmErr, LLMDriver = pcall(function() return LoadModule("Modules/LLMDriver/init") end)
+		ConPrintf("LLMDriver: pcall result: err=%s, type=%s", tostring(llmErr), type(LLMDriver))
 		if llmErr then
 			ConPrintf("LLMDriver load error: %s", LLMDriver)
-		elseif LLMDriver and LLMDriver.Init then
-			ConPrintf("LLMDriver: Calling Init()")
-			local initErr = LLMDriver:Init()
-			if not initErr then
-				ConPrintf("^1LLMDriver: Initialization failed^0")
+		elseif LLMDriver then
+			ConPrintf("LLMDriver: Module table keys: %s", table.concat((function() local t={} for k,_ in pairs(LLMDriver) do table.insert(t,k) end return t end)(), ","))
+			ConPrintf("LLMDriver: Init field = %s", tostring(LLMDriver.Init))
+			if LLMDriver and LLMDriver.Init then
+				ConPrintf("LLMDriver: Calling Init()")
+				local initErr = LLMDriver:Init()
+				if not initErr then
+					ConPrintf("^1LLMDriver: Initialization failed^0")
+				end
+			else
+				ConPrintf("LLMDriver: Module loaded but Init missing")
 			end
 		else
-			ConPrintf("LLMDriver: Module loaded but Init missing")
+			ConPrintf("LLMDriver: LoadModule returned nil")
 		end
 		ConPrintf("LLMDriver: Launch patch complete")
 		errMsg = PCall(self.main.Init, self.main)
