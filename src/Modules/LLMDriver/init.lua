@@ -2,6 +2,8 @@
 -- Module: LLMDriver Init
 -- Entry point for the LLM Driver module
 
+ConPrintf("LLMDriver: Module file loaded")
+
 local LoadModule = LoadModule
 local require = require
 
