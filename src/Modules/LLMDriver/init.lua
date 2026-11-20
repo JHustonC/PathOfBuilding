@@ -51,7 +51,9 @@ function LLMDriver:Init()
         return true
     end
 
+    ConPrintf("LLMDriver: Init() called")
     local cfg = config.Load()
+    ConPrintf("LLMDriver: Config loaded, enabled=%s, provider=%s", tostring(cfg.enabled), tostring(cfg.provider))
     if not cfg.enabled then
         ConPrintf("LLMDriver: Module disabled in config")
         return false
@@ -61,13 +63,16 @@ function LLMDriver:Init()
 
     -- Initialize provider
     local providerName = cfg.provider or "nvidia"
+    ConPrintf("LLMDriver: Getting provider: %s", providerName)
     local provider = providers.GetProvider(providerName, cfg)
     if not provider then
         ConPrintf("^1LLMDriver: Failed to initialize provider: %s^0", providerName)
         return false
     end
+    ConPrintf("LLMDriver: Provider object created: %s", provider.name)
 
     -- Test connection
+    ConPrintf("LLMDriver: Testing provider connection...")
     local ok, err = provider:test_connection()
     if not ok then
         ConPrintf("^1LLMDriver: Provider connection test failed: %s^0", err)
