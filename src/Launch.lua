@@ -76,15 +76,20 @@ function launch:OnInit()
 		self:ShowErrMsg("Error loading main script: no object returned")
 	elseif self.main.Init then
 		-- Load LLMDriver module (1-line patch)
+		ConPrintf("LLMDriver: Launch patch executing")
 		local llmErr, LLMDriver = pcall(function() return LoadModule("Modules/LLMDriver/init") end)
 		if llmErr then
 			ConPrintf("LLMDriver load error: %s", LLMDriver)
 		elseif LLMDriver and LLMDriver.Init then
+			ConPrintf("LLMDriver: Calling Init()")
 			local initErr = LLMDriver:Init()
 			if not initErr then
 				ConPrintf("^1LLMDriver: Initialization failed^0")
 			end
+		else
+			ConPrintf("LLMDriver: Module loaded but Init missing")
 		end
+		ConPrintf("LLMDriver: Launch patch complete")
 		errMsg = PCall(self.main.Init, self.main)
 		if errMsg then
 			self:ShowErrMsg("In 'Init': %s", errMsg)
