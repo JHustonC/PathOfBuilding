@@ -82,17 +82,21 @@ function launch:OnInit()
 		if llmErr then
 			ConPrintf("LLMDriver load error: %s", LLMDriver)
 		elseif LLMDriver then
-			ConPrintf("LLMDriver: Module table keys: %s", table.concat((function() local t={} for k,_ in pairs(LLMDriver) do table.insert(t,k) end return t end)(), ","))
-			ConPrintf("LLMDriver: Init field = %s", tostring(LLMDriver.Init))
-			if LLMDriver and LLMDriver.Init then
-				ConPrintf("LLMDriver: Calling Init()")
-				local initErr = LLMDriver:Init()
-				if not initErr then
-					ConPrintf("^1LLMDriver: Initialization failed^0")
+				if type(LLMDriver) == "table" then
+					ConPrintf("LLMDriver: Module table keys: %s", table.concat((function() local t={} for k,_ in pairs(LLMDriver) do table.insert(t,k) end return t end)(), ","))
+					ConPrintf("LLMDriver: Init field = %s", tostring(LLMDriver.Init))
+					if LLMDriver.Init then
+						ConPrintf("LLMDriver: Calling Init()")
+						local initErr = LLMDriver:Init()
+						if not initErr then
+							ConPrintf("^1LLMDriver: Initialization failed^0")
+						end
+					else
+						ConPrintf("LLMDriver: Module loaded but Init missing")
+					end
+				else
+					ConPrintf("LLMDriver: LoadModule returned string (error): %s", LLMDriver)
 				end
-			else
-				ConPrintf("LLMDriver: Module loaded but Init missing")
-			end
 		else
 			ConPrintf("LLMDriver: LoadModule returned nil")
 		end
